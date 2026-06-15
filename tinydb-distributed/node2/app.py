@@ -21,13 +21,13 @@ NODE_ID = 2
 User = Query()
 
 
-# API insert dữ liệu vào node2
+
 @app.route('/insert', methods=['POST'])
 def insert_data():
 
     data = request.json
 
-    # Sinh timestamp và gắn node_id
+    
     data["timestamp"] = generate_timestamp()
     data["node_id"] = NODE_ID
 
@@ -42,7 +42,7 @@ def insert_data():
         old_timestamp = old_data[0]["timestamp"]
         old_node_id = old_data[0].get("node_id", 2)
 
-        # Conflict Resolution
+    
         if data["timestamp"] > old_timestamp:
 
             db.update(data, User.id == data["id"])
@@ -53,7 +53,7 @@ def insert_data():
 
                 db.update(data, User.id == data["id"])
 
-    # Replication sang node1
+
     try:
 
         requests.post(OTHER_NODE, json=data)
@@ -67,7 +67,7 @@ def insert_data():
     }
 
 
-# API nhận replication từ node1
+
 @app.route('/replicate', methods=['POST'])
 def replicate():
 
@@ -84,7 +84,7 @@ def replicate():
         old_timestamp = old_data[0]["timestamp"]
         old_node_id = old_data[0].get("node_id", 2)
 
-        # Conflict Resolution
+
         if data["timestamp"] > old_timestamp:
 
             db.update(data, User.id == data["id"])
@@ -99,8 +99,6 @@ def replicate():
         "message": "Replication success on node2"
     }
 
-
-# API xem toàn bộ dữ liệu
 @app.route('/data', methods=['GET'])
 def get_data():
 
@@ -108,9 +106,6 @@ def get_data():
         "data": db.all()
     }
 
-
-# API xóa dữ liệu trên node2
-# và replicate thao tác xóa sang node1
 @app.route('/delete/<int:user_id>', methods=['DELETE'])
 def delete_data(user_id):
 
@@ -130,8 +125,6 @@ def delete_data(user_id):
         "message": f"Deleted id={user_id} and replicated"
     }
 
-
-# API nhận yêu cầu xóa từ node1
 @app.route('/delete_replica/<int:user_id>', methods=['DELETE'])
 def delete_replica(user_id):
 
