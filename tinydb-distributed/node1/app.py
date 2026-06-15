@@ -1,4 +1,3 @@
-
 import sys
 import os
 
@@ -103,13 +102,50 @@ def get_data():
     }
 
 
+@app.route('/delete/<int:user_id>', methods=['DELETE'])
+def delete_data(user_id):
+
+    db.remove(User.id == user_id)
+
+    try:
+
+        requests.delete(
+            f"http://127.0.0.1:5001/delete_replica/{user_id}"
+        )
+
+    except:
+
+        print("Node2 is offline")
+
+    return {
+        "message": f"Deleted id={user_id} and replicated"
+    }
+
+
+@app.route('/delete_replica/<int:user_id>', methods=['DELETE'])
+def delete_replica(user_id):
+
+    db.remove(User.id == user_id)
+
+    return {
+        "message": f"Replica delete success for id={user_id}"
+    }
+
+
 app.run(port=5000)
 
 """
+Ví dụ insert:
+
 Invoke-RestMethod `
     -Uri "http://127.0.0.1:5000/insert" `
     -Method POST `
     -ContentType "application/json" `
     -Body '{"id":2,"name":"Tran Thi B","age":21}'
-"""
 
+Ví dụ delete:
+
+Invoke-RestMethod `
+    -Uri "http://127.0.0.1:5000/delete/2" `
+    -Method DELETE
+"""
